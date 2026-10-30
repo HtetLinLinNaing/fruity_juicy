@@ -48,11 +48,13 @@ postcss.config.mjs              Tailwind PostCSS integration
 tsconfig.json                   Strict mode and @/* -> src/* alias
 package.json                    Dependencies, scripts and runtime requirements
 package-lock.json               Reproducible npm dependency tree
-01_project_setup.md             Approved setup PRD
-docs/superpowers/plans/          Approved implementation plan
+docs/README.md                  Documentation index
+docs/01-project-setup/          Setup PRD, implementation plan and verification
 ```
 
 Keep the root layout and placeholder as Server Components. Introduce client boundaries only when later features need them. Next.js generates or updates next-env.d.ts; do not hand-edit it.
+
+Documentation is grouped by project layer. See the [documentation index](./docs/README.md) for the [setup PRD](./docs/01-project-setup/prd.md), [implementation plan](./docs/01-project-setup/implementation-plan.md), and [verification report](./docs/01-project-setup/verification.md).
 
 ## Verification
 

@@ -1,7 +1,7 @@
 # Project Setup Verification
 
-PRD: 01_project_setup.md
-Implementation plan: docs/superpowers/plans/2026-10-30-project-setup.md
+PRD: [Project setup](./prd.md)
+Implementation plan: [Project setup plan](./implementation-plan.md)
 Date: 2026-10-30 (Asia/Bangkok)
 
 ## Results

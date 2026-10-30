@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js, TypeScript, App Router, Tailwind CSS, npm, ESLint.
 
-**Spec:** ../../../01_project_setup.md
+**Spec:** [Project setup PRD](./prd.md)
 
 ## Global Constraints
 
@@ -19,7 +19,7 @@
 - The lint script must run ESLint directly. The type-check script must run tsc --noEmit.
 - Keep the initial page independent of external fonts, media, APIs, and credentials.
 - GSAP, Lenis, application features, testing infrastructure, CI, and deployment are deferred.
-- Preserve 01_project_setup.md and this plan.
+- Preserve prd.md and this plan.
 
 ## Review Focus
 
