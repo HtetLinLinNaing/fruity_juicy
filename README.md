@@ -1,6 +1,6 @@
 # Fruity Juicy
 
-Project foundation for PRD 01: Next.js, TypeScript, App Router, Tailwind CSS, npm and ESLint.
+Fruity Juicy uses Next.js, TypeScript, App Router, Tailwind CSS, npm and ESLint, with a GSAP fruit preloader for PRD 02.
 
 ## Requirements
 
@@ -21,7 +21,7 @@ npm run dev
 
 Open http://localhost:3000. If that port is occupied, use the URL printed by Next.js or choose a port with `npm run dev -- --port 3001`.
 
-The initial page displays only the Fruity Juicy heading. It uses system fonts and local styles; no credentials, environment files, external media or API services are required.
+On a full page open or reload, ten fruit images alternate up and down in a centered loading screen. The screen fades out to reveal the Fruity Juicy placeholder. It uses local images and system fonts; no credentials, external media or API services are required.
 
 ## Commands
 
@@ -33,14 +33,18 @@ The initial page displays only the Fruity Juicy heading. It uses system fonts an
 | npm run start | Serve an existing production build. |
 | npm run lint | Check Next.js and TypeScript lint rules; warnings fail the check. |
 | npm run typecheck | Check strict TypeScript without emitting files. |
+| npm test | Run deterministic loading lifecycle tests with Node 24. |
 
 ## Structure
 
 ```text
-public/                         Reserved local static assets
+public/fruits/                  Ten local fruit image assets
 src/app/layout.tsx              English document, metadata and global styles
 src/app/page.tsx                Server-rendered placeholder at /
 src/app/globals.css             Tailwind import and system font
+src/components/Preloader.tsx    Fruit overlay, image readiness and GSAP animation
+src/components/preloader-lifecycle.ts Loading deadlines and single dismissal
+tests/                         Node-based loading lifecycle tests
 eslint.config.mjs               Next.js and TypeScript lint rules
 next.config.ts                  Minimal framework configuration
 next-env.d.ts                   Framework-generated TypeScript references
@@ -50,6 +54,7 @@ package.json                    Dependencies, scripts and runtime requirements
 package-lock.json               Reproducible npm dependency tree
 docs/README.md                  Documentation index
 docs/01-project-setup/          Setup PRD, implementation plan and verification
+docs/02-loading-screen/         Loader PRD, implementation plan and verification
 ```
 
 Keep the root layout and placeholder as Server Components. Introduce client boundaries only when later features need them. Next.js generates or updates next-env.d.ts; do not hand-edit it.
@@ -62,20 +67,22 @@ From a fresh installation, before starting a server:
 
 ```powershell
 npm ci
+npm test
 npm run lint
 npm run typecheck
 npm run build
 npm run start
 ```
 
-Open http://localhost:3000 and confirm the Fruity Juicy heading appears with centered layout and responsive text. Stop the server with Ctrl+C. Then run `npm run dev` and repeat the visual checks at viewport widths 375, 768 and 1440 pixels. Confirm no horizontal scrolling, browser application errors or hydration warnings. The initial render should request no external fonts, media or APIs.
+Open http://localhost:3000 and confirm the Fruity Juicy heading appears with centered layout and responsive text. Stop the server with Ctrl+C. Then run `npm run dev` and repeat the visual checks at viewport widths 320, 375, 768 and 1440 pixels. Confirm no horizontal scrolling, browser application errors or hydration warnings. The initial render should request no external fonts, media or APIs.
 
-A production build must finish before `npm run start`. Linting and type checking are separate explicit checks. Automated test infrastructure, animation libraries, page sections, design tokens, CI and deployment belong to later PRDs.
+A production build must finish before `npm run start`. Linting and type checking are separate explicit checks. The loader lifecycle tests use Node's built-in test runner and native TypeScript stripping; no test framework is installed. Page sections, scroll animation, smooth scrolling, design tokens, CI and deployment belong to later PRDs.
 
 ## Installed versions
 
 | Package | Version |
 | --- | --- |
+| gsap | 3.15.0 |
 | next | 16.4.3 |
 | react | 19.3.0 |
 | react-dom | 19.3.0 |
@@ -91,3 +98,9 @@ A production build must finish before `npm run start`. Linting and type checking
 ## Dependency compatibility note
 
 ESLint is pinned to 9.39.5 because the React, accessibility and import plugins bundled by eslint-config-next 16.4.3 do not declare ESLint 10 compatibility. npm may show an upstream deprecation warning for ESLint 9; lint checks still run with zero warnings. Upgrade the lint stack together when those plugins support ESLint 10.
+
+## Loading behavior
+
+The loader waits for document readiness and fruit image decoding, with a 1.2-second minimum and an independent 8-second maximum before its 0.5-second fade. Failed images retain an empty slot and never block completion. Reduced motion disables the repeating movement and uses a fade of at most 0.15 seconds. With JavaScript disabled, the overlay is hidden and the underlying page stays accessible.
+
+See the [loading-screen PRD](./docs/02-loading-screen/prd.md), [implementation plan](./docs/02-loading-screen/implementation-plan.md), and [verification report](./docs/02-loading-screen/verification.md).

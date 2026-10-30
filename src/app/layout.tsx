@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Preloader from "@/components/Preloader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,7 +12,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Preloader contentId="page-content" />
+        <noscript>
+          <style>{"[data-preloader] { display: none !important; }"}</style>
+        </noscript>
+        <div id="page-content">{children}</div>
+      </body>
     </html>
   );
 }
