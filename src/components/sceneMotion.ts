@@ -22,7 +22,19 @@ export function createSceneTransition(main: HTMLElement, compact = false): {
   const canShare = !!(source && destination && sourceLayer && sprite && roll &&
     spriteImage?.complete && spriteImage.naturalWidth && sourceImage?.complete && sourceImage.naturalWidth);
 
-  const compactHeight = () => Math.max(window.innerHeight, hero.offsetHeight, stage.offsetHeight);
+  const compactHeight = () => {
+    // refreshInit runs before ScrollTrigger removes the previous fixed pin width.
+    // Measure at the new containing width, then give pin styling back untouched.
+    const { width, maxWidth } = sceneRoot.style;
+    try {
+      sceneRoot.style.width = (main.clientWidth || window.innerWidth) + "px";
+      sceneRoot.style.maxWidth = "none";
+      return Math.max(window.innerHeight, hero.offsetHeight, stage.offsetHeight);
+    } finally {
+      sceneRoot.style.width = width;
+      sceneRoot.style.maxWidth = maxWidth;
+    }
+  };
   if (compact) gsap.set(sceneRoot, { "--scene-content-height": compactHeight() + "px" });
   gsap.set(sceneRoot, { height: compact ? "var(--scene-content-height)" : "100svh", overflow: "clip" });
   if (compact) gsap.set(hero, { position: "absolute", top: 0, left: 0, width: "100%" });

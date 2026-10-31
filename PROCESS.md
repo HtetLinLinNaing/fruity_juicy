@@ -440,3 +440,64 @@ Deployment HTTP verification: Node fetch also failed with a network error; reach
 ## 2026-10-31 — Authorized commit and push
 
 User requested feat-prefixed commit and push. Reused previously approved Git identity HtetLinLinNaing <htetlinlinnaing.myanmar@gmail.com>; latest typed address was not a valid email. Fresh npm test passed46 tests; lint/typecheck/build and git diff --check exited0. Fetched origin/feat/loading-screen: no ahead/behind commits before this commit. Live browser verification remains blocked by disabled browser access. No claim of verified animation fidelity or60fps.
+
+
+## 2026-10-31 — Deployed responsive browser check
+
+Browser access became available. Checked https://fruityjuicy.vercel.app/ in the in-app browser at 320x568, 375x812, 572x827, 768x1024, 1280x650 and 1440x900. Observed readable hero text, visible CTA, loaded fruit artwork, hidden scrollbar with working native scroll, desktop orange transfer at intermediate scroll positions, reverse return to hero, and reachable three-card collection/footer on fresh phone/tablet loads. Measured no horizontal document overflow at 320, 375, 572, 768 and 1440 widths. Captured loader and subsequent hero at 320x568; individual frames do not establish full handoff fidelity. Browser warning/error log reads returned empty.
+
+Resize observation requiring follow-up: resizing from phone collection to 768x1024 briefly showed the former narrow layout with a cream area to its right. It settled, but the end-of-scroll view did not expose the footer until a fresh tablet reload, which showed the footer correctly. Do not mark live resize acceptance complete. No implementation changes made.
+
+Not checked: physical touch devices, Safari/Firefox, hover response, keyboard-only flow, reduced-motion browser mode, slow/failed network, continuous animation fidelity or performance profiling/60fps. These checks do not establish deployment/source parity. Viewport override reset and temporary test tab closed. Screenshot saved outside repository in Codex visualizations. Historical blocked-browser notes above remain historical.
+
+
+## 2026-10-31 — Expanded acceptance checklist
+
+Additional deployed-browser observations: Tab focuses the hero CTA with a visible 2.4px outline; PageDown and End scroll correctly. At collection end Tab moved focus to body rather than the visually hidden hero button. Rapid down/up reversal restored hero opacity1 at scrollY0, with phase complete and no preloader restart. Reload from bottom reset scrollY0, showed a1440x900 covering loader, all9 images loaded, and overflowY hidden; pressing End left scrollY0. Repeated cached reloads completed. Loader removal wait timed out, but the next observation at about10.9sec showed complete; exact five-second timing and continuous no-jump flight remain inconclusive rather than passed.
+
+Confirmed resize defect:375x812 collection end ->768x1024 ->End leaves scrollY1708 at max1708, with footer top1083/bottom1098 below1024px viewport. Collection rect height1452 versus scrollHeight1574 indicates clipped overflow after resize; this is an observation, not a diagnosed cause. Screenshot saved outside repository as resize-footer-clipped.jpg. Fresh tablet reload reaches footer.812x375 landscape fallback had zero pin spacers, no horizontal overflow, and reachable footer. Midtransition resize returns a visible hero but continuity is not established.
+
+Card-wave computed transforms changed across observations. All3 figure shadows were none. Pointer placement through clicking decorative artwork confirmed nearby blueberry hover (scale/rotation), CTA hover (translateY-4), and strawberry card hover (translateY-10 and fruit scale/rotation) while its wave layer remained independent. Other individual fruit/card hovers and seamless pointer-exit interpolation are not fully checked. No browser warning/error logs returned.
+
+GitHub repository opened signed out and explicitly marked Public. main latest visible commit f0b8df3 merges feature/animated-collection; listing includes0acb277. Published README has setup,3experiences,libraries,animation/scroll,responsiveness,performance notes,assumptions and live URL. Its historical verification prose still needs final submission cleanup. Deployment commit parity not established.
+
+Unsupported by available browser tools: network/CPU throttling, request blocking, reduced-motion emulation, JavaScript-disable mode, Incognito creation and performance tracing. No physical-device touch or OS rotation checks. No60fps, complete fidelity, failed-request recovery or full checklist pass claimed. Test viewport reset; both temporary tabs closed. No code changes, commits, pushes or deployments performed.
+
+
+## 2026-10-31 — Fix clipped collection after viewport resize
+
+Expected outcomes: resizing a completed phone collection to tablet reserves the full responsive stage height; final caption and footer remain reachable; width/max-width pin styling remains owned by ScrollTrigger; repeated desktop/compact changes retain one pin and scrollable content. Failure case reproduced in deployed and local development browsers before changing code.
+
+Root cause: onRefreshInit runs before ScrollTrigger reverts its old fixed pin width/max-width. compactHeight measured the stage at375px even after the containing main became768px, saving1452px while the resized stage needed1574px. compactHeight now temporarily measures using main.clientWidth (viewport fallback), clears the previous max-width constraint, and restores both inline styles in finally. Measurement runs only during setup/refresh, with no new frame-by-frame reads or dependencies.
+
+Regression: tests/scene-motion.test.ts adds a controlled-layout case modeling the observed1452/1574px heights and stale375px width/max-width. It failed before the fix (expected1574px, received1452px), then passed. GSAP is real; Happy DOM geometry is controlled, so this test does not establish native layout. npm test passed47 tests across5files; npm run lint and npm run build (including TypeScript) exited0. git diff --check exited0 (Git emitted LF/CRLF normalization warnings).
+
+Real browser: existing dev server3000 and fresh production build served3001. Repeated375x812 collection-end ->768x1024 ->End: scene and stage both1574px, footer bottom975.6 within1024px, one pin, scroll max1830. Saved screenshot resize-footer-fixed.jpg outside repository. Crossed desktop1440x900 and back to375x812; final phone footer bottom764.8 within812px, one pin and no horizontal overflow. Production browser warn/error logs empty. Screenshot capture was intermittently unavailable while hidden; showing the preview restored capture. Some screenshots immediately after resizing show transient intermediate geometry; no claim of perfectly seamless resize frames. Viewport override reset and production test tab closed.
+
+Remaining checks: network/CPU throttling, failed-request browser recovery, reduced-motion switching, JavaScript-disabled rendering, physical touch devices and performance tracing remain unsupported/unverified. GitHub commit-status connector returned Unknown tool; production alias-to-commit matching remains unverified. This local fix is not deployed; no commit/push/deployment performed. Earlier browser-failure notes remain historical evidence, superseded only for this reproduced case.
+
+
+## 2026-10-31 — Additional acceptance checks in connected Chrome
+
+Chrome extension became available. Used a temporary Chrome test tab at https://fruityjuicy.vercel.app/ and the actual Chrome DevTools UI through native CUA. Device toolbar was already in phone emulation at440x956; these are not physical-device results. No application code changed in this pass.
+
+Checked: enabled prefers-reduced-motion:reduce in Rendering. Real page matchMedia returned true, pinned spacers disappeared, all3 card-wave transforms were none and hero opacity1. Reload completed in reduced mode and native End reached footer bottom907.7 inside956px viewport. Live preference switch was exercised on the already-loaded page; changing during loader flight was not specifically verified. Restored No emulation.
+
+Checked: disabled JavaScript via DevTools command, reloaded and observed real noscript fallback. Server-rendered phase remained loading/heroReadyfalse while loader computed display:none, no pin spacers, static hero visible and native End reached collection/footer. Saved no-javascript-check.jpg. Re-enabled JavaScript; subsequent reload returned phasecomplete.
+
+Checked: Network Disable cache enabled and3G profile confirmed in DevTools. Slow load displayed loader while11media requests pending; later phasecomplete with0pending/failed images and readable hero. Individual image timings included roughly15–30s under3G. This does not establish an8s wall-clock ceiling from navigation: readiness timers begin after application JavaScript runs.
+
+Checked: Request conditions pattern *://fruityjuicy.vercel.app/_next/image* blocked real requests (68affected shown). Initial load had24failed image elements; after loader exited15 remained and all had visibility:hidden, with0visible broken-image elements. Hero text/CTA remained usable; card sizes/names and footer remained reachable with empty artwork spaces. Saved failed-images-check.jpg. Removed the test blocking rule and reloaded; real images recovered (0failed).
+
+Profiled: normal-speed scrolling/reversal trace18.319s, Scripting1639ms, Rendering929ms, Painting342ms, System757ms; CLS0. 4xCPU profile confirmed before second recording; trace16.049s, Scripting6076ms, Rendering3842ms, Painting1092ms, System2325ms; CLS0. Page remained navigable during both down/up samples; DevTools displayed18passed insights. Frame-rate distribution and continuous60fps were not quantified, so performance acceptance is partial, not a60fps pass. Main-thread activity under4x was substantial and does not establish low-end phone performance. Trace export attempts could not produce a verified saved raw trace; saved performance-cpu-check.png of the visible trace instead. Browser log API returned no warnings/errors after restored normal artwork.
+
+Verified production provenance in authenticated Vercel read-only UI: deployment F1dPw3XiHEbLkRwpasbeFUwwB1mj was Ready, Production Current, Source main at f0b8df3ba8ed198333f30f12cd5cf4ed524b304f, with fruityjuicy.vercel.app assigned. This matches the GitHub main merge previously observed. Saved deployment-source-check.jpg. The uncommitted local resize fix is newer and remains absent from this deployment.
+
+Cleanup: JavaScript restored (phasecomplete after reload), reduced-motion false, CPU and Network selectors No throttling, cache-disable checkbox restored unchecked, test request-blocking rule removed; test DevTools and temporary Chrome/Vercel tabs closed. Screenshots saved outside repository in Codex visualizations. Physical touch/orientation on a real phone remains untested; no connected phone is available. No commits, pushes or deployments performed. Earlier unsupported-tool notes remain historical and are superseded only for the checks explicitly described here.
+
+
+## 2026-10-31 — Submission README cleanup
+
+User requested README cleanup, commit and push together with the resize bug fix. Replaced accumulated README history with the current setup, three implemented experiences, library rationale, CSS architecture, motion/native scroll/responsiveness approach, performance notes, assumptions and dated verification table. Historical evidence remains in PROCESS.md. Explicitly distinguish local resize verification from the older production deployment; retain physical-device, frame-rate and fidelity limits. No new application behavior in this documentation pass. Fresh precommit checks and push outcome recorded below.
+
+Fresh precommit verification: npm test passed47 tests across5files; npm run lint and npm run build (including TypeScript) exited0. README section and local-reference review completed; git diff --check exited0, with Git line-ending normalization warnings only. Fetched origin; feature/animated-collection had no remote divergence before this commit. Authorized commit uses the existing HtetLinLinNaing identity and targets the existing feature branch; this does not itself merge the fix into production main.
