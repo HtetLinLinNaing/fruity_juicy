@@ -66,6 +66,7 @@ function getElement<T extends HTMLElement>(selector: string): T {
 }
 
 function finishFade() {
+  advanceTime(5000);
   const preloader = getElement<HTMLButtonElement>('[data-testid="preloader"]');
   expect(preloader.disabled).toBe(false);
   act(() => preloader.click());
@@ -83,28 +84,32 @@ function unmountPage() {
 }
 
 describe("readiness and completion", () => {
-  test("pending content stays covered with one deadline under Strict Mode", () => {
+  test("pending content stays covered under Strict Mode", () => {
     renderPage(false);
 
     expect(getElement<HTMLButtonElement>('[data-testid="preloader"]').disabled).toBe(true);
     expect(getElement<HTMLDivElement>("[data-page-content]").inert).toBe(true);
     expect(document.documentElement.classList.contains("page-loading")).toBe(true);
-    expect(vi.getTimerCount()).toBe(1);
   });
 
-  test("already-ready content can reveal immediately without scheduling a deadline", () => {
+  test("already-ready content stays covered until exactly five seconds", () => {
     renderPage(true);
+    advanceTime(4999);
+    expect(getElement<HTMLButtonElement>('[data-testid="preloader"]').disabled).toBe(true);
+    expect(getElement<HTMLDivElement>("[data-page-content]").inert).toBe(true);
+    advanceTime(1);
 
     expect(getElement<HTMLButtonElement>('[data-testid="preloader"]').disabled).toBe(false);
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  test("readiness starts a one-way reveal and cancels the pending deadline", () => {
+  test("early readiness stays latched through the minimum and cancels the deadline", () => {
     renderPage(false);
     advanceTime(500);
 
     renderPage(true);
     renderPage(false);
+    advanceTime(4500);
 
     expect(getElement<HTMLButtonElement>('[data-testid="preloader"]').disabled).toBe(false);
     expect(vi.getTimerCount()).toBe(0);
@@ -142,6 +147,15 @@ describe("readiness and completion", () => {
 });
 
 describe("deadline and cleanup", () => {
+  test("waits for content that becomes ready after the minimum", () => {
+    renderPage(false);
+    advanceTime(6000);
+    expect(getElement<HTMLButtonElement>('[data-testid="preloader"]').disabled).toBe(true);
+    renderPage(true);
+    expect(getElement<HTMLButtonElement>('[data-testid="preloader"]').disabled).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   test("reveals at the original eight-second deadline despite a parent rerender", () => {
     renderPage(false);
     advanceTime(4000);

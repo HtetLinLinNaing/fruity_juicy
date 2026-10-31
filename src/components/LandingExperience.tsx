@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import Preloader from "./Preloader";
 
 type LandingExperienceProps = {
@@ -10,10 +10,23 @@ type LandingExperienceProps = {
 
 type LoadingPhase = "loading" | "revealing" | "complete";
 
+const LandingRevealed = createContext(false);
+
+export function useLandingRevealed() {
+  return useContext(LandingRevealed);
+}
+
 export default function LandingExperience({ ready, children }: LandingExperienceProps) {
-  const [phase, setPhase] = useState<LoadingPhase>(ready ? "revealing" : "loading");
+  const [phase, setPhase] = useState<LoadingPhase>("loading");
+  const [minimumElapsed, setMinimumElapsed] = useState(false);
+  const [contentReady, setContentReady] = useState(ready);
   const contentRef = useRef<HTMLDivElement>(null);
   const loading = phase !== "complete";
+
+  useEffect(() => {
+    const minimum = setTimeout(() => setMinimumElapsed(true), 5000);
+    return () => clearTimeout(minimum);
+  }, []);
 
   useEffect(() => {
     if (phase !== "loading") return;
@@ -47,7 +60,8 @@ export default function LandingExperience({ ready, children }: LandingExperience
   }, [loading]);
 
   // Readiness is one-way: a later prop change must not restart the loader.
-  if (ready && phase === "loading") {
+  if (ready && !contentReady) setContentReady(true);
+  if (contentReady && minimumElapsed && phase === "loading") {
     setPhase("revealing");
   }
 
@@ -55,7 +69,9 @@ export default function LandingExperience({ ready, children }: LandingExperience
     <>
       {loading && <Preloader ready={phase === "revealing"} onComplete={() => setPhase("complete")} />}
       <div ref={contentRef} data-page-content data-loading-phase={phase}>
-        {children}
+        <LandingRevealed.Provider value={phase === "complete"}>
+          {children}
+        </LandingRevealed.Provider>
       </div>
     </>
   );
