@@ -1,106 +1,109 @@
 # Fruity Juicy
 
-Fruity Juicy uses Next.js, TypeScript, App Router, Tailwind CSS, npm and ESLint, with a GSAP fruit preloader for PRD 02.
+A fruit-themed landing page for an animation-focused technical interview challenge, inspired by [Fluffy Hugs](https://nft.fluffyhugs.io/). The assignment emphasizes motion, responsive layout, performance, and maintainable code.
 
-## Requirements
+**Status:** In progress. The fruit preloader is implemented; the page behind it is currently a placeholder.
 
-- Node.js 24.x (verified with 24.16.0).
-- npm 11.x (verified with 11.13.0).
-- The selected Next.js release requires at least Node.js 20.9.0; this project standardizes on Node.js 24.x.
+- Repository: [fruity_juicy](https://github.com/HtetLinLinNaing/fruity_juicy)
+- Live website: not deployed yet.
+- Engineering decisions and AI collaboration: [PROCESS.md](./PROCESS.md).
 
-Dependency versions are recorded in package.json and package-lock.json. Use npm to preserve the lockfile.
+## Run locally
 
-## Local setup
+Use Node.js 24.x and npm 11.x, as specified in package.json.
 
-Open a terminal in this folder:
-
-```powershell
+```sh
 npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. If that port is occupied, use the URL printed by Next.js or choose a port with `npm run dev -- --port 3001`.
+Open [localhost:3000](http://localhost:3000), or the address printed by the development server. If needed, choose another port with `npm run dev -- --port 3001`.
 
-On a full page open or reload, ten fruit images alternate up and down in a centered loading screen. The screen fades out to reveal the Fruity Juicy placeholder. It uses local images and system fonts; no credentials, external media or API services are required.
+```sh
+npm test              # Loading wrapper component tests
+npm run lint          # ESLint; warnings fail the check
+npm run typecheck     # TypeScript without emitted files
+npm run build         # Production build
+npm run start         # Serve a completed production build
+```
 
-## Commands
+Dependencies are pinned in package.json and package-lock.json. Use npm to preserve the lockfile. No credentials or external media services are required.
 
-| Command | Purpose |
+## Challenge scope
+
+One page, with no additional application routes or functional navigation required. The proposed three-part experience is:
+
+| Part | Current state |
 | --- | --- |
-| npm ci | Reproduce dependencies from the committed lockfile. |
-| npm run dev | Start development with automatic refresh. |
-| npm run build | Create the production build. |
-| npm run start | Serve an existing production build. |
-| npm run lint | Check Next.js and TypeScript lint rules; warnings fail the check. |
-| npm run typecheck | Check strict TypeScript without emitting files. |
-| npm test | Run deterministic loading lifecycle tests with Node 24. |
+| Loading screen | Implemented: ten alternating fruit animations and overlay fade |
+| Hero with entrance reveal | Pending; design and behavior still to be agreed |
+| Content / collection section with scroll animation | Pending; design and behavior still to be agreed |
 
-## Structure
+Hover interactions, scroll animation, and the transition into the final hero are still pending. This repository is not yet a complete challenge submission.
+
+## Technology choices
+
+- **Next.js and React:** retain the existing App Router foundation. Layout and page content remain Server Components; browser-dependent loading behavior has its own client boundary.
+- **TypeScript:** strict checking for component inputs and loading phases.
+- **Tailwind CSS:** responsive spacing, sizing, and layout without a separate stylesheet per component.
+- **GSAP:** synchronized repeating fruit transforms and the overlay opacity fade, with scoped cleanup.
+- **Vitest and Happy DOM (development only):** render the loading wrapper with React DOM and test readiness, exact timeout boundaries, and cleanup. The visual preloader is mocked so these tests do not depend on animation frames.
+
+Installed versions are recorded in package.json. The existing lint stack uses ESLint 9 because the original setup recorded compatibility constraints with ESLint 10; recheck compatibility before upgrading it.
+
+## Animation and loading
+
+Ten local fruit images share equally sized slots in a single centered row. Adjacent fruits move in opposite directions simultaneously, using a 0.7-second movement in each direction, a 12px displacement, and no stagger. The label stays still.
+
+The page owns readiness and passes it to LandingExperience. That wrapper keeps the loading deadline and content interaction separate from the visual Preloader, which receives `ready` and calls `onComplete` after its fade. There is no minimum display time: readiness starts the 0.5-second fade immediately. An independent 8-second deadline also starts the fade if readiness never arrives. Decorative loader fruits do not gate page readiness; failed fruits are hidden while their slots remain. The current text-only placeholder is immediately ready. When a hero is built, its essential assets must supply the readiness signal; below-the-fold collection images should not block it.
+
+Reduced motion disables repeating movement and limits the exit fade to 0.15 seconds. Preference changes are handled during loading. Scrolling and covered-content interaction are restored after dismissal or cleanup. With JavaScript disabled, a fallback hides the overlay.
+
+**Smooth scrolling:** no smoothing library is installed. The placeholder uses native browser scrolling; the scroll-animation approach will be chosen with the remaining sections.
+
+## Responsiveness and performance
+
+The loader keeps one fruit row from 320px upward, with at least 24px horizontal padding and a maximum row width of 480px. Smaller screens shrink the slots and gaps. The final hero and collection layouts remain pending.
+
+- Animate transforms and opacity rather than layout dimensions.
+- Reserve square image slots to avoid movement as images arrive.
+- Request loader images eagerly because they are needed immediately; heavy content media and lazy loading will be considered when those sections exist.
+- Keep frame updates inside GSAP rather than React state.
+- Dispose of animation contexts, timers, and event listeners on cleanup.
+
+A 60fps target still needs profiling on the completed page and representative mobile devices. Responsive screenshots alone do not establish frame-rate performance.
+
+## Project structure
 
 ```text
-public/fruits/                  Ten local fruit image assets
-src/app/layout.tsx              English document, metadata and global styles
-src/app/page.tsx                Server-rendered placeholder at /
-src/app/globals.css             Tailwind import and system font
-src/components/Preloader.tsx    Fruit overlay, image readiness and GSAP animation
-src/components/preloader-lifecycle.ts Loading deadlines and single dismissal
-tests/                         Node-based loading lifecycle tests
-eslint.config.mjs               Next.js and TypeScript lint rules
-next.config.ts                  Minimal framework configuration
-next-env.d.ts                   Framework-generated TypeScript references
-postcss.config.mjs              Tailwind PostCSS integration
-tsconfig.json                   Strict mode and @/* -> src/* alias
-package.json                    Dependencies, scripts and runtime requirements
-package-lock.json               Reproducible npm dependency tree
-docs/README.md                  Documentation index
-docs/01-project-setup/          Setup PRD, implementation plan and verification
-docs/02-loading-screen/         Loader PRD, implementation plan and verification
+src/app/                         Layout, metadata, global styles, placeholder page
+src/components/LandingExperience.tsx
+                                 Page readiness, loading phase, content interaction
+src/components/Preloader.tsx     Fruit rendering, reduced motion, GSAP loop and exit
+tests/landing-experience.test.tsx
+                                 Loading phase, deadline, and interaction tests
+public/fruits/                   Ten local fruit images
+AGENTS.md                        Instructions for AI-assisted contributions
+PROCESS.md                       Decisions, collaboration, verification evidence
 ```
 
-Keep the root layout and placeholder as Server Components. Introduce client boundaries only when later features need them. Next.js generates or updates next-env.d.ts; do not hand-edit it.
+## Test scope
 
-Documentation is grouped by project layer. See the [documentation index](./docs/README.md) for the [setup PRD](./docs/01-project-setup/prd.md), [implementation plan](./docs/01-project-setup/implementation-plan.md), and [verification report](./docs/01-project-setup/verification.md).
+Run `npm test`. The suite renders the real LandingExperience under React Strict Mode with a simulated DOM and clock. Only the visual Preloader is replaced: its test button receives `ready`, and each test explicitly decides when to call `onComplete`. The mock does not assume the real animation succeeded.
 
-## Verification
-
-From a fresh installation, before starting a server:
-
-```powershell
-npm ci
-npm test
-npm run lint
-npm run typecheck
-npm run build
-npm run start
-```
-
-Open http://localhost:3000 and confirm the Fruity Juicy heading appears with centered layout and responsive text. Stop the server with Ctrl+C. Then run `npm run dev` and repeat the visual checks at viewport widths 320, 375, 768 and 1440 pixels. Confirm no horizontal scrolling, browser application errors or hydration warnings. The initial render should request no external fonts, media or APIs.
-
-A production build must finish before `npm run start`. Linting and type checking are separate explicit checks. The loader lifecycle tests use Node's built-in test runner and native TypeScript stripping; no test framework is installed. Page sections, scroll animation, smooth scrolling, design tokens, CI and deployment belong to later PRDs.
-
-## Installed versions
-
-| Package | Version |
+| Expected behavior | Component evidence |
 | --- | --- |
-| gsap | 3.15.0 |
-| next | 16.4.3 |
-| react | 19.3.0 |
-| react-dom | 19.3.0 |
-| @tailwindcss/postcss | 4.3.3 |
-| @types/node | 24.19.2 |
-| @types/react | 19.3.0 |
-| @types/react-dom | 19.3.0 |
-| eslint | 9.39.5 |
-| eslint-config-next | 16.4.3 |
-| tailwindcss | 4.3.3 |
-| typescript | 5.9.3 |
+| Pending content stays protected; already-ready content can reveal immediately | Readiness tests check the preloader's input and page interaction state |
+| Readiness starts a one-way reveal and cancels the deadline | Readiness-change test includes a later false signal |
+| The page waits for exit completion before unlocking | Withheld-completion test advances time without invoking the callback, then explicitly finishes |
+| Missing readiness cannot block beyond the eight-second wait | Deadline test checks 7999/8000ms, including an unrelated parent rerender |
+| Unmount cancels scheduled work and restores interaction | Cleanup test checks timers, inert state, and the scroll-lock class |
+| Completion restores prior focus without stealing newly moved focus | Dedicated focus scenarios |
+| A pre-existing scroll lock remains owned by its caller | Lock-preservation scenario |
 
-## Dependency compatibility note
+These tests check the wrapper's contract, not actual GSAP fades, image loading/failure, live reduced-motion behavior, browser-enforced keyboard/inert behavior, responsive layout, or frame rate. A missing real animation-completion callback could still leave content blocked; a passing mock test does not rule that out. Use real-browser integration checks for the visual preloader and page working together, and profiling for performance claims. Dated verification evidence and intentional failure checks are recorded in PROCESS.md.
+## Verification and assumptions
 
-ESLint is pinned to 9.39.5 because the React, accessibility and import plugins bundled by eslint-config-next 16.4.3 do not declare ESLint 10 compatibility. npm may show an upstream deprecation warning for ESLint 9; lint checks still run with zero warnings. Upgrade the lint stack together when those plugins support ESLint 10.
+Run the checks above before submitting. Browser acceptance checks should cover 320, 375, 768, and 1440px; cached, delayed, failed, and stalled assets; reduced motion; JavaScript disabled; restored scrolling; and absence of application errors. See [PROCESS.md](./PROCESS.md) for dated evidence and its limits.
 
-## Loading behavior
-
-The loader waits for document readiness and fruit image decoding, with a 1.2-second minimum and an independent 8-second maximum before its 0.5-second fade. Failed images retain an empty slot and never block completion. Reduced motion disables the repeating movement and uses a fade of at most 0.15 seconds. With JavaScript disabled, the overlay is hidden and the underlying page stays accessible.
-
-See the [loading-screen PRD](./docs/02-loading-screen/prd.md), [implementation plan](./docs/02-loading-screen/implementation-plan.md), and [verification report](./docs/02-loading-screen/verification.md).
+The brief permits original artwork and branding, so this project uses fruit assets. The proposed loading / hero / collection selection follows the brief's recommended set; final section designs need confirmation. CTAs may remain non-navigating but need hover and keyboard-focus states. No backend, authentication, or additional application routes are planned. Public repository visibility and the final live URL must be verified before submission.
