@@ -1,0 +1,5 @@
+/* Static and reduced-motion layouts stay in normal document flow. */
+.scene { position: relative; isolation: isolate; }
+.backdrop { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: #103f29; opacity: 0; visibility: hidden; }
+.orange { position: absolute; left: 0; top: 0; z-index: 3; width: 100px; height: 100px; pointer-events: none; opacity: 0; visibility: hidden; }
+.roll, .orange img { display: block; width: 100%; height: 100%; object-fit: contain; }

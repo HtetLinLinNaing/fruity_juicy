@@ -1,5 +1,5 @@
-import Hero from "../components/Hero";
+import FruityLanding from "../components/FruityLanding";
 
 export default function Home() {
-  return <Hero />;
+  return <FruityLanding />;
 }

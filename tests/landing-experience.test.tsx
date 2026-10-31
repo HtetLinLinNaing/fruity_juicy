@@ -92,6 +92,22 @@ describe("readiness and completion", () => {
     expect(document.documentElement.classList.contains("page-loading")).toBe(true);
   });
 
+  test("loading starts at the top instead of revealing a restored section boundary", () => {
+    const scroll = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    const restoration = window.history.scrollRestoration;
+    try {
+      renderPage(false);
+      expect(window.history.scrollRestoration).toBe("manual");
+      expect(scroll).toHaveBeenCalledWith({ top: 0, left: 0, behavior: "instant" });
+      expect(scroll).toHaveBeenCalledTimes(1);
+      renderPage(true);
+      advanceTime(5000);
+      expect(scroll).toHaveBeenCalledTimes(1);
+      unmountPage();
+      expect(window.history.scrollRestoration).toBe(restoration);
+    } finally { scroll.mockRestore(); }
+  });
+
   test("already-ready content stays covered until exactly five seconds", () => {
     renderPage(true);
     advanceTime(4999);

@@ -49,7 +49,7 @@ function loader() {
   return button;
 }
 
-function images() { return Array.from(container.querySelectorAll<HTMLImageElement>("main img")); }
+function images() { return Array.from(container.querySelectorAll<HTMLImageElement>("[data-hero-image]")); }
 
 async function settle(image: HTMLImageElement, failed = false) {
   Object.defineProperty(image, "naturalWidth", { configurable: true, value: failed ? 0 : 1280 });
@@ -125,4 +125,56 @@ test("preserves the requested pear and grapefruit from the fruit folder", () => 
   expect(grapefruit).not.toBeNull();
   expect(decodeURIComponent(pear!.src)).toContain("/fruits/pear.png");
   expect(decodeURIComponent(grapefruit!.src)).toContain("/fruits/grapefruit.png");
+});
+
+
+test("one main presents the hero followed by three named collection portraits", () => {
+  expect(container.querySelectorAll("main")).toHaveLength(1);
+  const sections = container.querySelectorAll("main section[aria-labelledby]");
+  expect(sections).toHaveLength(2);
+  expect(sections[0].getAttribute("aria-labelledby")).toBe("hero-title");
+  expect(sections[1].getAttribute("aria-labelledby")).toBe("collection-title");
+  expect(sections[1].querySelector("h2")?.textContent).toBe("Meet the fresh bunch.");
+  expect(Array.from(sections[1].querySelectorAll("figcaption h3"), node => node.textContent)).toEqual(["Strawberry", "Pear", "Grapefruit"]);
+});
+
+test("pending collection images do not extend loading or bypass exit completion", async () => {
+  const collectionImages = container.querySelectorAll<HTMLImageElement>("[data-collection-image]");
+  expect(collectionImages).toHaveLength(6);
+  for (const image of images()) await settle(image);
+  expect(Array.from(collectionImages).every(image => !image.complete)).toBe(true);
+  act(() => vi.advanceTimersByTime(4999));
+  expect(loader().disabled).toBe(true);
+  act(() => vi.advanceTimersByTime(1));
+  expect(loader().disabled).toBe(false);
+  expect(container.querySelector<HTMLElement>("[data-page-content]")?.inert).toBe(true);
+  act(() => loader().click());
+  expect(Boolean(container.querySelector<HTMLElement>("[data-page-content]")?.inert)).toBe(false);
+});
+
+test("failed collection artwork retains its caption and recovers on load", async () => {
+  const image = container.querySelector<HTMLImageElement>('figure [data-collection-image]');
+  expect(image).not.toBeNull();
+  await settle(image!, true);
+  expect(image!.style.visibility).toBe("hidden");
+  expect(image!.closest("figure")?.querySelector("h3")?.textContent).toBe("Strawberry");
+  expect(image!.loading).toBe("lazy");
+  await settle(image!);
+  expect(image!.style.visibility).not.toBe("hidden");
+});
+
+
+test("hero and collection share one scene without nesting their landmarks", () => {
+  const scene = container.querySelector("main > [data-landing-scene]");
+  expect(scene).not.toBeNull();
+  expect(Array.from(scene!.querySelectorAll(":scope > section"), section => section.getAttribute("aria-labelledby"))).toEqual(["hero-title", "collection-title"]);
+  expect(container.querySelectorAll("[data-fruit-scroll]")).toHaveLength(8);
+});
+
+
+test("collection cards have separate wave layers and one shared scroll orange", () => {
+  const cards = container.querySelectorAll("[data-collection-card]");
+  expect(Array.from(cards).every(card => card.querySelector("[data-card-wave] > figure"))).toBe(true);
+  expect(container.querySelectorAll("[data-scene-orange] img")).toHaveLength(1);
+  expect(container.querySelector("[data-collection-orange-anchor]")).not.toBeNull();
 });
