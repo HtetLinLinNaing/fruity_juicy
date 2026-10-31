@@ -162,3 +162,25 @@ test("failed shared image keeps original fruit paths available", () => {
   expect(element('[data-fruit-scroll="orange"]').style.visibility).not.toBe("hidden");
   expect(element("[data-collection-orange-anchor]").style.visibility).not.toBe("hidden");
 });
+
+
+test("compact refresh measures the collection at its new width before pin styles reset", () => {
+  const sceneRoot = element("[data-landing-scene]");
+  const stage = element("[data-collection-stage]");
+  let availableWidth = 375;
+  Object.defineProperty(main, "clientWidth", { configurable: true, get: () => availableWidth });
+  // Happy DOM has no layout engine: model the two observed responsive heights.
+  // A stale fixed pin width (and max-width) must not determine the new height.
+  Object.defineProperty(stage, "offsetHeight", { configurable: true, get: () =>
+    sceneRoot.style.width === "768px" && sceneRoot.style.maxWidth !== "375px" ? 1574 : 1452 });
+  start(true);
+  scene!.progress(1);
+  expect(sceneRoot.style.getPropertyValue("--scene-content-height")).toBe("1452px");
+  sceneRoot.style.width = "375px";
+  sceneRoot.style.maxWidth = "375px";
+  availableWidth = 768;
+  refreshLayout();
+  expect(sceneRoot.style.getPropertyValue("--scene-content-height")).toBe("1574px");
+  expect(sceneRoot.style.width).toBe("375px");
+  expect(sceneRoot.style.maxWidth).toBe("375px");
+});
