@@ -4,3 +4,9 @@ body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Owned by LandingExperience; removing the class restores existing inline styles. */
+html.page-loading,
+html.page-loading body {
+  overflow: hidden !important;
+}
