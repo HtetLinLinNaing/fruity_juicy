@@ -1,0 +1,94 @@
+/* Scroll moves card wrappers; hover moves frames and their fruit separately. */
+.collection { position: relative; background: #103f29; color: #fff3a6; }
+.stage { position: relative; isolation: isolate; min-height: 100svh; padding: 64px 6vw 80px; overflow: clip; }
+.heading { position: relative; z-index: 2; text-align: center; }
+.eyebrow { font-size: 11px; letter-spacing: .22em; font-weight: 600; }
+.heading h2 { margin: 14px auto; max-width: 1000px; font-size: clamp(42px, 5.6vw, 96px); line-height: 1; letter-spacing: -.045em; font-weight: 600; }
+.heading > p:last-child { font-size: clamp(17px, 1.5vw, 23px); }
+.gallery { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 3.5vw, 70px); max-width: 1200px; margin: 52px auto 24px; align-items: center; }
+.card { min-width: 0; width: 80%; justify-self: center; }
+.card:first-child { rotate: -7deg; }
+.card:last-child { rotate: 7deg; }
+.card:nth-child(2) { margin-top: 36px; }
+.frame { margin: 0; padding: 12px; border-radius: 8px; background: #fff8dc; color: #103f29; transition: transform 300ms ease; }
+.portrait { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 3px; }
+.pink { background: #f6bdc8; }
+.yellow { background: #e9e59c; }
+.peach { background: #f6c590; }
+.portrait img { display: block; width: 100%; height: 100%; object-fit: contain; transition: transform 350ms ease; }
+.number { position: absolute; top: 12px; left: 14px; font-size: 12px; z-index: 1; }
+.star { position: absolute; right: 10px; bottom: 4px; font-size: 32px; }
+.frame figcaption { padding: 14px 6px 8px; }
+.frame h3 { margin: 0; font-size: clamp(24px, 2.2vw, 36px); font-weight: 500; letter-spacing: -.03em; }
+.frame figcaption p { margin: 4px 0 0; font-size: clamp(11px, 1vw, 15px); }
+.decorations { pointer-events: none; position: absolute; inset: 0; z-index: 1; }
+.decorations img { width: 100%; height: auto; }
+.decoration0 { position: absolute; width: min(48vw, 760px); left: -19%; bottom: -20%; rotate: 22deg; }
+.decoration1 { position: absolute; width: 10%; right: 1%; top: 21%; rotate: -20deg; }
+.decoration2 { position: absolute; width: 8%; right: 8%; bottom: 1%; rotate: 26deg; }
+.signoff { position: relative; z-index: 2; margin: 46px 0 0; text-align: center; font-size: 10px; letter-spacing: .2em; }
+.signoff span { padding-left: 14px; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .card:hover .frame { transform: translateY(-10px); }
+  .card:hover img { transform: rotate(6deg) scale(1.06); }
+}
+@media (max-width: 900px) {
+  .stage { padding: 64px 32px 48px; }
+  .heading h2 { max-width: 560px; }
+  .gallery { grid-template-columns: 1fr; gap: 28px; max-width: 380px; margin-top: 44px; }
+  .card:first-child { rotate: -4deg; }
+  .card:last-child { rotate: 4deg; }
+  .card:nth-child(2) { margin-top: 0; }
+  .frame h3 { font-size: 30px; }
+  .frame figcaption p { font-size: 14px; }
+  .decoration0 { width: 65vw; left: -26%; top: calc(100svh - 220px); bottom: auto; }
+  .decoration1 { width: 14%; right: -3%; top: 8%; }
+  .decoration2 { width: 14%; right: -2%; bottom: 28%; }
+}
+@media (max-width: 480px) {
+  .stage { padding: 56px 28px 48px; }
+  .heading h2 { font-size: 46px; }
+  .eyebrow { font-size: 8px; letter-spacing: .15em; }
+  .gallery { gap: 24px; }
+  .frame { padding: 10px; }
+  .frame h3 { font-size: 28px; }
+  .frame figcaption p { font-size: 12px; }
+}
+@media (min-width: 901px) {
+  /* Preserve the smaller card widths, removing unused space inside each column. */
+  .gallery { grid-template-columns: repeat(3, minmax(0, calc((100% - 84px) * 0.8 / 3))); justify-content: center; gap: 32px; }
+  .card { width: 100%; }
+}
+@media (min-width: 901px) and (max-height: 799px) {
+  .stage { padding-top: 32px; padding-bottom: 48px; }
+  .heading h2 { font-size: clamp(44px, 5vw, 70px); }
+  .gallery { max-width: 900px; margin-top: 26px; gap: 32px; }
+  .signoff { margin-top: 30px; }
+}
+@media (prefers-reduced-motion: reduce) { .frame, .portrait img { transition: none; } }
+@media (min-width: 901px) and (min-height: 560px) {
+  .stage {
+    height: 100svh;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 20px;
+    padding-block: 32px;
+  }
+  .heading h2 { font-size: clamp(44px, 7svh, 96px); }
+  .gallery { width: 100%; height: 100%; min-height: 0; max-width: 1200px; margin: 0 auto; gap: 32px; justify-items: center;
+    grid-template-columns: repeat(3, minmax(0, min(calc((100% - 84px) * 0.8 / 3), calc((100svh - 440px) * 0.8)))); }
+  /* Reserve height for the heading, caption, tilt, and footer before sizing art. */
+  .card { width: 100%; }
+  .signoff { margin: 0; }
+}
+@media (min-width: 901px) and (min-height: 560px) and (max-height: 699px) {
+  .stage { padding-block: 18px; gap: 12px; }
+  .heading h2 { font-size: clamp(32px, 6svh, 42px); margin-block: 8px; }
+  .heading > p:last-child { font-size: 16px; line-height: 1.25; }
+  .eyebrow { font-size: 9px; line-height: 1.2; }
+  .gallery { grid-template-columns: repeat(3, minmax(0, min(calc((100% - 84px) * 0.8 / 3), calc((100svh - 320px) * 0.8)))); }
+  .card:nth-child(2) { margin-top: 0; }
+  .frame h3 { font-size: 28px; line-height: 1.15; }
+  .frame figcaption p { font-size: 12px; line-height: 1.3; }
+}

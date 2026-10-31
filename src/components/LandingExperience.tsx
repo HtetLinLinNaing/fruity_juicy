@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import Preloader from "./Preloader";
 
 type LandingExperienceProps = {
@@ -11,6 +11,9 @@ type LandingExperienceProps = {
 type LoadingPhase = "loading" | "revealing" | "complete";
 
 const LandingRevealed = createContext(false);
+const OrangeLanded = createContext(false);
+
+export function useOrangeLanded() { return useContext(OrangeLanded); }
 
 export function useLandingRevealed() {
   return useContext(LandingRevealed);
@@ -20,8 +23,23 @@ export default function LandingExperience({ ready, children }: LandingExperience
   const [phase, setPhase] = useState<LoadingPhase>("loading");
   const [minimumElapsed, setMinimumElapsed] = useState(false);
   const [contentReady, setContentReady] = useState(ready);
+  const [orangeLanded, setOrangeLanded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const startedAtTop = useRef(false);
+  const getOrangeTarget = useCallback(() => contentRef.current?.querySelector<HTMLElement>("[data-hero-orange-anchor]") ?? null, []);
   const loading = phase !== "complete";
+
+  // This always starts with a loader, so browser-restored scroll must not expose
+  // the seam between sections while its backdrop fades into the hero.
+  useLayoutEffect(() => {
+    const restoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    if (!startedAtTop.current) {
+      startedAtTop.current = true;
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+    return () => { window.history.scrollRestoration = restoration; };
+  }, []);
 
   useEffect(() => {
     const minimum = setTimeout(() => setMinimumElapsed(true), 5000);
@@ -67,10 +85,11 @@ export default function LandingExperience({ ready, children }: LandingExperience
 
   return (
     <>
-      {loading && <Preloader ready={phase === "revealing"} onComplete={() => setPhase("complete")} />}
+      {loading && <Preloader ready={phase === "revealing"} getOrangeTarget={getOrangeTarget}
+        onOrangeLanded={() => setOrangeLanded(true)} onComplete={() => setPhase("complete")} />}
       <div ref={contentRef} data-page-content data-loading-phase={phase}>
         <LandingRevealed.Provider value={phase === "complete"}>
-          {children}
+          <OrangeLanded.Provider value={orangeLanded}>{children}</OrangeLanded.Provider>
         </LandingRevealed.Provider>
       </div>
     </>

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { gsap } from "gsap";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import LandingExperience, { useLandingRevealed } from "./LandingExperience";
+import { useLandingRevealed, useOrangeLanded } from "./LandingExperience";
 import styles from "./Hero.module.css";
 
 import orange from "../../public/fruits/orange.png";
@@ -24,23 +24,23 @@ const FRUITS = [
 ] as const;
 type Fruit = typeof FRUITS[number]["id"];
 
-export default function Hero() {
+export default function Hero({ onReady }: { onReady: () => void }) {
   const [settled, setSettled] = useState<ReadonlySet<Fruit>>(() => new Set());
   const settle = useCallback((fruit: Fruit) => {
     setSettled((previous) => previous.has(fruit) ? previous : new Set([...previous, fruit]));
   }, []);
 
-  return (
-    <LandingExperience ready={settled.size === FRUITS.length}>
-      <HeroScene onImageSettled={settle} />
-    </LandingExperience>
-  );
+  useEffect(() => {
+    if (settled.size === FRUITS.length) onReady();
+  }, [settled, onReady]);
+  return <HeroScene onImageSettled={settle} />;
 }
 
 function HeroScene({ onImageSettled }: { onImageSettled: (fruit: Fruit) => void }) {
   const heroRef = useRef<HTMLElement>(null);
   const entrancePlayed = useRef(false);
   const revealed = useLandingRevealed();
+  const orangeLanded = useOrangeLanded();
 
   // Covers images that finished loading (or failed) before hydration.
   useEffect(() => {
@@ -57,6 +57,7 @@ function HeroScene({ onImageSettled }: { onImageSettled: (fruit: Fruit) => void 
     const motion = gsap.matchMedia();
     motion.add({
       desktop: "(min-width: 901px)",
+      sharedOrange: "(min-height: 400px)",
       mobile: "(max-width: 900px)",
       reduced: "(prefers-reduced-motion: reduce)",
     }, (context) => {
@@ -71,14 +72,14 @@ function HeroScene({ onImageSettled }: { onImageSettled: (fruit: Fruit) => void 
         entrance.fromTo("[data-hero-copy]", { y: 28, opacity: 0 }, {
           y: 0, opacity: 1, duration: 0.8, stagger: 0.1,
         });
-        entrance.fromTo("[data-fruit-enter]", { y: desktop ? 90 : 35, scale: 0.78, opacity: 0 }, {
+        entrance.fromTo(orangeLanded || context.conditions?.sharedOrange ? "[data-fruit-enter]:not([data-hero-orange-enter])" : "[data-fruit-enter]", { y: desktop ? 90 : 35, scale: 0.78, opacity: 0 }, {
           y: 0, scale: 1, opacity: 1, duration: 1.1, stagger: 0.045,
         }, 0.12);
         entrancePlayed.current = true;
       }
 
       // Separate transform layers keep entrance and idle movements independent.
-      const floats = gsap.to("[data-fruit-float]", {
+      const floats = gsap.to(context.conditions?.sharedOrange ? '[data-fruit-scroll]:not([data-fruit-scroll="orange"]) [data-fruit-float]' : "[data-fruit-float]", {
         y: (index: number) => (index % 2 ? -1 : 1) * (desktop ? 12 : 5),
         rotation: (index: number) => index % 2 ? 2 : -2,
         duration: (index: number) => 2.4 + index * 0.13,
@@ -103,16 +104,15 @@ function HeroScene({ onImageSettled }: { onImageSettled: (fruit: Fruit) => void 
       };
     }, heroRef);
     return () => motion.revert();
-  }, [revealed]);
+  }, [revealed, orangeLanded]);
 
   return (
-    <main>
       <section ref={heroRef} className={styles.hero} data-hero-ready={revealed} aria-labelledby="hero-title">
         <header className={styles.header}>
           <span className={styles.wordmark} aria-label="Fruity Juicy">FRUITY<br />JUICY</span>
           <span className={styles.tagline}>Fresh by nature <span aria-hidden="true">—</span></span>
         </header>
-        <div className={styles.copy}>
+        <div className={styles.copy} data-hero-scroll-copy>
           <h1 id="hero-title" data-hero-copy className={styles.title}>
             <span>A little fresh.</span><span>A lot of fun.</span>
           </h1>
@@ -123,12 +123,13 @@ function HeroScene({ onImageSettled }: { onImageSettled: (fruit: Fruit) => void 
             </button>
           </div>
         </div>
-        <div className={styles.artwork} aria-hidden="true">
+        <div className={styles.artwork} data-hero-scroll-art aria-hidden="true">
           {FRUITS.map(({ id: fruit, src }) => (
-            <div key={fruit} className={`${styles.fruit} ${styles[fruit]}`}>
-              <div data-fruit-enter className={styles.enter}>
+            <div key={fruit} className={`${styles.fruit} ${styles[fruit]}`} data-hero-orange-anchor={fruit === "orange" ? "" : undefined}>
+              <div data-fruit-scroll={fruit} className={styles.scroll}>
+              <div data-fruit-enter data-hero-orange-enter={fruit === "orange" ? "" : undefined} className={styles.enter}>
                 <div data-fruit-float className={styles.float}>
-                  <div className={styles.hover}>
+                  <div className={styles.hover} data-hero-orange-hover={fruit === "orange" ? "" : undefined}>
                     <Image
                       src={src}
                       alt="" width={1280} height={1280}
@@ -153,6 +154,7 @@ function HeroScene({ onImageSettled }: { onImageSettled: (fruit: Fruit) => void 
                   </div>
                 </div>
               </div>
+              </div>
             </div>
           ))}
           <span className={`${styles.spark} ${styles.sparkOne}`}>✦</span>
@@ -164,6 +166,5 @@ function HeroScene({ onImageSettled }: { onImageSettled: (fruit: Fruit) => void 
           <span>FRESH BY NATURE</span>
         </footer>
       </section>
-    </main>
   );
 }
