@@ -82,10 +82,11 @@ export function createSceneTransition(main: HTMLElement, compact = false): {
     const transfer = gsap.timeline();
     const hover = select("[data-hero-orange-hover]");
     if (hover) {
-      const settleHover = gsap.to(hover, { scale: 1, rotation: 0, parseTransform: true, duration: 0.2, ease: "power1.out" });
-      transfer.add(settleHover, 0);
-      transfer.eventCallback("onStart", () => { settleHover.invalidate(); });
-      transfer.eventCallback("onReverseComplete", () => { gsap.set(hover, { clearProps: "transform" }); });
+      // CSS owns the hover transform. Tween only its strength so refresh and
+      // callback-suppressed rewinds cannot leave an inline transform blocking it.
+      transfer.fromTo(hover, { "--hero-hover-strength": 1 }, {
+        "--hero-hover-strength": 0, duration: 0.2, ease: "power1.out",
+      }, 0);
     }
     // Coordinates use the centres of rotated anchors and their unrotated sizes.
     // Functions are reevaluated when ScrollTrigger invalidates on refresh.

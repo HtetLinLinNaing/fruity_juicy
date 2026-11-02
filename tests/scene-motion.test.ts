@@ -91,29 +91,28 @@ test("compact transition preserves the complete collection height after its pin 
   expect(element("[data-landing-scene]").style.getPropertyValue("--scene-content-height")).toBe("");
 });
 
-test("an active source hover settles before the shared orange takes over", () => {
-  gsap.set(element("[data-hero-orange-hover]"), { scale: 1.09, rotation: 5 });
+test("hover strength settles before the shared orange takes over without owning its transform", () => {
   start();
-  expect(scene).not.toBeNull();
+  const hover = element("[data-hero-orange-hover]");
   scene!.time(0.2);
-  expect(Number(gsap.getProperty(element("[data-hero-orange-hover]"), "scaleX"))).toBeCloseTo(1);
-  expect(Number(gsap.getProperty(element("[data-hero-orange-hover]"), "rotation"))).toBeCloseTo(0);
+  expect(Number(hover.style.getPropertyValue("--hero-hover-strength"))).toBe(0);
+  expect(hover.style.transform).toBe("");
 });
 
-test("hover changes after scene setup are captured when scrolling starts", () => {
+test("returning to the hero restores hover strength across repeated transfers", () => {
   start();
-  expect(scene).not.toBeNull();
-  scene!.progress(0);
-  gsap.set(element("[data-hero-orange-hover]"), { scale: 1.09, rotation: 5 });
-  scene!.time(0.1);
-  const scale = Number(gsap.getProperty(element("[data-hero-orange-hover]"), "scaleX"));
-  expect(scale).toBeGreaterThan(1);
-  expect(scale).toBeLessThan(1.09);
-  scene!.progress(0);
-  expect(element("[data-hero-orange-hover]").style.transform).toBe("");
-  gsap.set(element("[data-hero-orange-hover]"), { scale: 1.2, rotation: 5 });
-  scene!.time(0.1);
-  expect(Number(gsap.getProperty(element("[data-hero-orange-hover]"), "scaleX"))).toBeGreaterThan(1.04);
+  const hover = element("[data-hero-orange-hover]");
+  for (let cycle = 0; cycle < 2; cycle++) {
+    scene!.time(0.1);
+    const strength = Number(hover.style.getPropertyValue("--hero-hover-strength"));
+    expect(strength).toBeGreaterThan(0);
+    expect(strength).toBeLessThan(1);
+    scene!.time(0.2);
+    expect(Number(hover.style.getPropertyValue("--hero-hover-strength"))).toBe(0);
+    scene!.progress(0);
+    expect(Number(hover.style.getPropertyValue("--hero-hover-strength"))).toBe(1);
+    expect(hover.style.transform).toBe("");
+  }
 });
 
 test("a shared image error during travel restores original layers and reverse remains usable", () => {
@@ -183,4 +182,12 @@ test("compact refresh measures the collection at its new width before pin styles
   expect(sceneRoot.style.getPropertyValue("--scene-content-height")).toBe("1574px");
   expect(sceneRoot.style.width).toBe("375px");
   expect(sceneRoot.style.maxWidth).toBe("375px");
+});
+
+test("the resting hero leaves its transform free for CSS hover, including after refresh", () => {
+  start();
+  scene!.progress(0);
+  expect(element("[data-hero-orange-hover]").style.transform).toBe("");
+  scene!.progress(0.5).progress(0, true).invalidate().progress(0);
+  expect(element("[data-hero-orange-hover]").style.transform).toBe("");
 });
