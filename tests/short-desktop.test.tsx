@@ -3,6 +3,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, test, vi } from "vitest";
 import Home from "../src/app/page";
+import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 vi.mock("../src/components/Preloader", () => ({
@@ -52,12 +53,23 @@ test.each([[1280, 650], [572, 827], [375, 812]])("a %i by %i viewport connects i
         getBoundingClientRect: { configurable: true, value: () => new DOMRect(0, 0, width, readHeight()) },
       });
     }
-    act(() => vi.advanceTimersByTime(5000));
+    act(() => vi.advanceTimersByTime(800));
     const finish = container.querySelector<HTMLButtonElement>("[data-finish-loader]")!;
     expect(finish.disabled).toBe(false);
     await act(async () => finish.click());
     expect(container.querySelectorAll(".pin-spacer")).toHaveLength(1);
     expect(container.querySelector<HTMLElement>('[aria-labelledby="collection-title"]')!.style.position).toBe("absolute");
+    const scene = ScrollTrigger.getAll().find(trigger => trigger.pin === sceneRoot)!.animation! as gsap.core.Timeline;
+    const wave = gsap.getTweensOf(container.querySelector("[data-card-wave]")!)[0];
+    expect(wave.paused()).toBe(true);
+    // Move the milestone to prove the coordinator follows choreography, not a copied time.
+    scene.addLabel("cardsWave", 1.2);
+    act(() => { scene.time(1, false); });
+    expect(wave.paused()).toBe(true);
+    act(() => { scene.time(1.3, false); });
+    expect(wave.paused()).toBe(false);
+    act(() => { scene.time(0.5, false); });
+    expect(wave.paused()).toBe(true);
     if (width <= 900) {
       stageHeight = 2900;
       act(() => { ScrollTrigger.refresh(); });

@@ -6,7 +6,7 @@ A single-page, fruit-themed landing page for the UI Animation Challenge, inspire
 - **Public repository:** [HtetLinLinNaing/fruity_juicy](https://github.com/HtetLinLinNaing/fruity_juicy)
 - **Decisions and dated verification:** [PROCESS.md](./PROCESS.md)
 
-The three requested experiences are implemented and deployed. A collection resize correction has also been verified in a local production build; confirmation on the live production deployment is still pending.
+The deployed demo contains the three requested experiences. The current `refactor/cleanup-and-bugfixes` checkout includes newer fixes and review improvements; source-to-live parity has not been confirmed. The checks below distinguish current local verification from historical browser evidence.
 
 ## Setup
 
@@ -65,11 +65,11 @@ Current versions are recorded in package.json. The rounded Fredoka font is hoste
 
 ## Animation and scrolling
 
-The loading wrapper waits for hero images to settle, successfully or with an error, and enforces a five-second minimum after the client loading effect starts. An independent eight-second deadline starts the exit if hero requests stall. Neither timer includes the time needed to download and start the application JavaScript.
+The loading wrapper waits for hero images to settle, successfully or with an error, and enforces an 800 ms minimum after the client loading effect starts. An independent eight-second deadline starts the exit if hero requests stall. Neither timer includes the time needed to download and start the application JavaScript.
 
 When the orange artwork and destination are available, a fixed sprite travels from the loader into the hero over 1.25 seconds. Missing artwork, an unavailable target, reduced motion or interruption uses a fade fallback. Content remains inert and scrolling stays locked until the visual exit completes. Collection images do not gate the loader.
 
-Entrance, floating, scroll and hover transforms use separate nested elements so they can work together. The hero orange keeps its hover transform in CSS; the scroll animation reduces its hover strength before the shared-orange handoff. One visible shared orange replaces its source and destination copies during the scene transfer.
+Entrance, floating, scroll and hover transforms use separate nested elements so they can work together. The hero orange keeps its hover transform in CSS; the scroll animation reduces its hover strength before the shared-orange handoff. One visible shared orange replaces its source and destination copies during the scene transfer. Hero exit paths are keyed by fruit name so reordering artwork preserves its motion. Named timeline labels connect collection entry, card reveals and idle waves, including reverse scrolling.
 
 Scrolling remains native; no additional smooth-scroll library is used. ScrollTrigger's scrubbed timeline gives the animation a gradual response while retaining wheel and keyboard scrolling.
 
@@ -81,7 +81,7 @@ Scrolling remains native; no additional smooth-scroll library is used. ScrollTri
 
 ## Responsiveness and accessibility
 
-The hero uses a desktop composition and rearranges text and artwork for smaller screens. Collection cards form a row on desktop and stack on tablet and phone widths. Card dimensions and typography adapt to the available space.
+The hero uses a desktop composition and rearranges text and artwork for smaller screens. Collection cards form a row on desktop and stack on tablet and phone widths. Card dimensions and typography adapt to the available space. Desktop cards use one grid formula limited by row width and available viewport height; smaller screens use a single column.
 
 Measurements refresh after fonts settle and on viewport changes. During compact refresh, collection height is measured at the current containing width rather than the previous pinned width, keeping the last card and footer reachable.
 
@@ -99,7 +99,16 @@ The button has a visible keyboard-focus outline. With prefers-reduced-motion ena
 
 Normal and 4× CPU-slowdown scrolling traces were recorded in Chrome. Content remained navigable and both traces reported CLS 0. The slowdown trace showed substantial main-thread activity. Continuous 60fps, low-powered physical-device performance and complete reference fidelity are not claimed.
 
-## Verification — 2026-10-31
+## Current local verification - 2026-11-02
+
+- `npm test`: 49 tests passed, including reordered artwork and forward/reverse card-wave coordination. Loading tests enforce the approved 800 ms minimum while retaining the eight-second deadline and exit-completion safeguard.
+- `npm run lint`, `npm run typecheck` and `npm run build`: passed.
+- Current browser observations and their limits are recorded in PROCESS.md.
+- Latest source-to-live parity remains unconfirmed; no deployment was performed for these review improvements.
+
+## Historical verification - 2026-10-31
+
+These observations apply to the version checked on that date, not automatically to the current checkout.
 
 | Check | Evidence and limits |
 | --- | --- |
@@ -124,7 +133,7 @@ Remaining checks are physical-phone touch and rotation, Safari/Firefox, a contin
 - Loader, hero and collection satisfy the requested three experiences.
 - This is one page with no real navigation, working CTA, authentication or backend.
 - Static, readable content is the fallback for reduced motion, failed artwork and disabled JavaScript.
-- The five-second loader minimum is an intentional presentation choice; the eight-second deadline starts exit rather than guaranteeing dismissal eight seconds after navigation.
+- The 800 ms loader minimum briefly presents the animation without the previous five-second delay; the eight-second deadline starts exit rather than guaranteeing dismissal eight seconds after navigation.
 - No full 3D reconstruction of the reference or verified 60fps claim is made.
 
 ## Project structure

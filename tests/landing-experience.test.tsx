@@ -66,7 +66,7 @@ function getElement<T extends HTMLElement>(selector: string): T {
 }
 
 function finishFade() {
-  advanceTime(5000);
+  advanceTime(800);
   const preloader = getElement<HTMLButtonElement>('[data-testid="preloader"]');
   expect(preloader.disabled).toBe(false);
   act(() => preloader.click());
@@ -101,16 +101,16 @@ describe("readiness and completion", () => {
       expect(scroll).toHaveBeenCalledWith({ top: 0, left: 0, behavior: "instant" });
       expect(scroll).toHaveBeenCalledTimes(1);
       renderPage(true);
-      advanceTime(5000);
+      advanceTime(800);
       expect(scroll).toHaveBeenCalledTimes(1);
       unmountPage();
       expect(window.history.scrollRestoration).toBe(restoration);
     } finally { scroll.mockRestore(); }
   });
 
-  test("already-ready content stays covered until exactly five seconds", () => {
+  test("already-ready content stays covered until exactly 800 milliseconds", () => {
     renderPage(true);
-    advanceTime(4999);
+    advanceTime(799);
     expect(getElement<HTMLButtonElement>('[data-testid="preloader"]').disabled).toBe(true);
     expect(getElement<HTMLDivElement>("[data-page-content]").inert).toBe(true);
     advanceTime(1);
@@ -125,7 +125,7 @@ describe("readiness and completion", () => {
 
     renderPage(true);
     renderPage(false);
-    advanceTime(4500);
+    advanceTime(300);
 
     expect(getElement<HTMLButtonElement>('[data-testid="preloader"]').disabled).toBe(false);
     expect(vi.getTimerCount()).toBe(0);

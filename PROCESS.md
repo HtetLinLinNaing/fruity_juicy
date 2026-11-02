@@ -27,7 +27,7 @@ Keep future planning to a short checklist here. Record significant decisions and
 - **One travelling orange:** hide the original copies during transfer so the page shows one continuous moving object.
 - **Native scrolling:** keep normal wheel and keyboard behavior without adding a smooth-scroll dependency.
 - **Responsive fallback:** shorten the pinned transition on compact screens; use normal flow for very short screens and reduced motion.
-- **Loading safeguards:** wait for hero images to settle, with a five-second minimum and an eight-second readiness deadline after client effects start. Missing artwork or interrupted travel uses a fade fallback.
+- **Loading safeguards:** wait for hero images to settle, with an 800 ms minimum and an eight-second readiness deadline after client effects start. Missing artwork or interrupted travel uses a fade fallback.
 
 ## Two useful debugging examples
 
@@ -45,3 +45,26 @@ Optional typing and blueberry drop/float effects were removed at the user's requ
 - Tests use real React/GSAP where relevant, with controlled image readiness, timing, media matching, and geometry. Passing them does not prove native layout or animation smoothness.
 - Physical-phone behavior, Safari/Firefox, seamless intermediate resize frames, complete reference fidelity, and sustained 60fps remain unverified.
 - The orange hover fix and documentation cleanup are included on `refactor/cleanup-and-bugfixes`. Main and production deployment are outside this branch update; latest source-to-live parity has not been confirmed. See README for demo and repository links.
+
+
+## Review improvements — 2026-11-02
+
+Approved scope: apply the hiring-review recommendations in this chat. Keep the current fruit composition and choreography; improve how their intent is expressed. Reuse this clean feature checkout and existing dependencies; do not commit, push or deploy.
+
+Implementation checklist:
+- [x] Replace order-dependent hero exit arrays with settings keyed by fruit name; protect reordered artwork with a real GSAP regression.
+- [x] Name collection reveal/wave milestones in the timeline and use the wave label in the scene coordinator; check forward and reverse wave activation.
+- [x] Consolidate desktop collection sizing into one grid formula with named row/height constraints, preserving breakpoint dimensions; inspect in Chrome.
+- [x] Apply the approved 800 ms loading minimum, reconcile README status, run tests/lint/typecheck/build, and record fresh evidence separately from historical checks.
+
+Expected outcomes: reordering fruit markup preserves each fruit's exit path; card waves follow the reveal milestone in both scroll directions; desktop/tablet/mobile compositions and footer reachability remain intact. Existing missing-image, reduced-motion, deadline and cleanup behavior must remain protected. Browser checks supplement controlled DOM geometry; they do not establish sustained 60fps.
+
+
+Fresh verification for these review improvements (2026-11-02):
+- `npm test -- tests/scene-motion.test.ts`: the new reordered-fruit regression failed before the fix (strawberry received x=280 instead of -190), then all 11 scene tests passed after the fix.
+- Loading tests were updated first and failed against the previous five-second minimum; after changing the minimum to 800 ms, `npm test` passed all 49 tests across five files. The existing deadline, image-failure and exit-completion cases remain in the suite.
+- The wave test moves the timeline milestone and checks pause/resume/reverse with real GSAP/ScrollTrigger. Temporarily restoring the old 0.9-second cutoff made all three viewport scenarios fail at the expected pause assertion. The correct implementation was restored and `npm test` passed all 49 tests again.
+- `npm run lint`, `npm run typecheck` and `npm run build` passed. Build generated the static home page successfully.
+- Local development Chrome at 1440x900 and 1280x650: collection row, captions and footer visible; no horizontal document overflow. At 375x812: hero composition and single-column collection inspected; no horizontal document overflow. Phone-to-tablet resize to 768x1024 preserved the single-column collection and a reachable footer (bottom approximately 976px within the 1024px viewport).
+- Separate read-only review of code and test changes found no concrete regressions. It did not run additional checks.
+- Not rechecked: production deployment parity, physical phones, Safari/Firefox, slow-network and reduced-motion behavior in a real browser, continuous loading-to-hero reference fidelity, seamless intermediate resize frames and sustained 60fps. Existing controlled tests and historical browser observations do not replace these checks. No commit, push or deployment performed.

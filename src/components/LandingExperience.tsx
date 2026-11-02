@@ -10,6 +10,9 @@ type LandingExperienceProps = {
 
 type LoadingPhase = "loading" | "revealing" | "complete";
 
+const MINIMUM_LOADING_MS = 800;
+const READINESS_DEADLINE_MS = 8000;
+
 const LandingRevealed = createContext(false);
 const OrangeLanded = createContext(false);
 
@@ -42,14 +45,14 @@ export default function LandingExperience({ ready, children }: LandingExperience
   }, []);
 
   useEffect(() => {
-    const minimum = setTimeout(() => setMinimumElapsed(true), 5000);
+    const minimum = setTimeout(() => setMinimumElapsed(true), MINIMUM_LOADING_MS);
     return () => clearTimeout(minimum);
   }, []);
 
   useEffect(() => {
     if (phase !== "loading") return;
 
-    const timeout = setTimeout(() => setPhase("revealing"), 8000);
+    const timeout = setTimeout(() => setPhase("revealing"), READINESS_DEADLINE_MS);
     return () => clearTimeout(timeout);
   }, [phase]);
 

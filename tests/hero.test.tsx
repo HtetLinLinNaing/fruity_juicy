@@ -60,7 +60,7 @@ async function settle(image: HTMLImageElement, failed = false) {
 test("does not reveal before every distinct hero image settles, including duplicate events", async () => {
   expect(images()).toHaveLength(8);
   expect(images().every(image => decodeURIComponent(image.src).includes("/fruits/"))).toBe(true);
-  act(() => vi.advanceTimersByTime(5000));
+  act(() => vi.advanceTimersByTime(800));
   expect(loader().disabled).toBe(true);
   for (const image of images().slice(0, -1)) await settle(image, true);
   await settle(images()[0], true);
@@ -76,10 +76,10 @@ test("does not reveal before every distinct hero image settles, including duplic
   expect(container.querySelector("main button")?.textContent).toContain("Meet the fruits");
 });
 
-test("successful images still wait five seconds before reveal", async () => {
+test("successful images still wait 800 milliseconds before reveal", async () => {
   expect(images()).toHaveLength(8);
   for (const image of images()) await settle(image);
-  act(() => vi.advanceTimersByTime(4999));
+  act(() => vi.advanceTimersByTime(799));
   expect(loader().disabled).toBe(true);
   act(() => vi.advanceTimersByTime(1));
   expect(loader().disabled).toBe(false);
@@ -99,7 +99,7 @@ test("cached hero images can dismiss the loader without another load event", asy
   vi.spyOn(HTMLImageElement.prototype, "naturalWidth", "get").mockReturnValue(1280);
   root = createRoot(container);
   await act(async () => root.render(<Home />));
-  act(() => vi.advanceTimersByTime(5000));
+  act(() => vi.advanceTimersByTime(800));
   expect(loader().disabled).toBe(false);
 });
 
@@ -143,7 +143,7 @@ test("pending collection images do not extend loading or bypass exit completion"
   expect(collectionImages).toHaveLength(6);
   for (const image of images()) await settle(image);
   expect(Array.from(collectionImages).every(image => !image.complete)).toBe(true);
-  act(() => vi.advanceTimersByTime(4999));
+  act(() => vi.advanceTimersByTime(799));
   expect(loader().disabled).toBe(true);
   act(() => vi.advanceTimersByTime(1));
   expect(loader().disabled).toBe(false);

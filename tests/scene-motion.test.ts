@@ -191,3 +191,23 @@ test("the resting hero leaves its transform free for CSS hover, including after 
   scene!.progress(0.5).progress(0, true).invalidate().progress(0);
   expect(element("[data-hero-orange-hover]").style.transform).toBe("");
 });
+
+
+test("fruit exit paths follow their names when artwork order changes", () => {
+  const artwork = element("[data-hero-scroll-art]");
+  const pear = element('[data-fruit-scroll="pear"]');
+  const strawberry = document.createElement("div");
+  strawberry.dataset.fruitScroll = "strawberry";
+  artwork.append(strawberry);
+  // Pear is deliberately before strawberry, unlike the rendered hero.
+  start();
+  scene!.time(1.15);
+  expect(Number(gsap.getProperty(pear, "x"))).toBeCloseTo(240);
+  expect(Number(gsap.getProperty(pear, "y"))).toBeCloseTo(-220);
+  expect(Number(gsap.getProperty(pear, "rotation"))).toBeCloseTo(-24);
+  expect(Number(gsap.getProperty(strawberry, "x"))).toBeCloseTo(-190);
+  expect(Number(gsap.getProperty(strawberry, "y"))).toBeCloseTo(-260);
+  expect(Number(gsap.getProperty(strawberry, "rotation"))).toBeCloseTo(28);
+  scene!.progress(0);
+  expect(Number(gsap.getProperty(pear, "x"))).toBeCloseTo(0);
+});
