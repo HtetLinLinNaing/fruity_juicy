@@ -49,18 +49,18 @@ function LandingSections({ onHeroReady }: { onHeroReady: () => void }) {
       });
       let activity = () => {};
       let observer: IntersectionObserver | undefined;
-      let disposeDesktop = () => {};
+      let disposeTransition = () => {};
       if (context.conditions?.pinned) {
-        const desktop = createSceneTransition(main, compact);
-        if (!desktop) return;
-        const scene = desktop.timeline;
-        disposeDesktop = desktop.dispose;
-        activity = () => { cardWave.paused(document.hidden || scene.time() < 0.9); };
+        const transition = createSceneTransition(main, compact);
+        if (!transition) return;
+        const scene = transition.timeline;
+        disposeTransition = transition.dispose;
+        activity = () => { cardWave.paused(document.hidden || scene.time() < scene.labels.cardsWave); };
         scene.eventCallback("onUpdate", activity);
         ScrollTrigger.create({
           trigger: sceneRoot, animation: scene, start: "top top", end: () => "+=" + window.innerHeight * (compact ? 1.25 : 2),
           pin: true, pinSpacing: true, scrub: compact ? 0.35 : 0.6, invalidateOnRefresh: true, anticipatePin: 1,
-          onRefreshInit: desktop.refreshLayout,
+          onRefreshInit: transition.refreshLayout,
         });
       } else {
         cards.forEach((card, index) => {
@@ -78,7 +78,7 @@ function LandingSections({ onHeroReady }: { onHeroReady: () => void }) {
       activity();
       return () => {
         observer?.disconnect();
-        disposeDesktop();
+        disposeTransition();
         document.removeEventListener("visibilitychange", activity);
       };
     }, mainRef);

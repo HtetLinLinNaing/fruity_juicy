@@ -1,5 +1,16 @@
 import { gsap } from "gsap";
 
+// Keep each path attached to its fruit, independent of artwork order.
+const FRUIT_EXITS: Record<string, { x: number; y: number; rotation: number }> = {
+  strawberry: { x: -190, y: -260, rotation: 28 },
+  pear: { x: 240, y: -220, rotation: -24 },
+  grapefruit: { x: 280, y: 180, rotation: 28 },
+  blueberryOne: { x: -160, y: 150, rotation: -24 },
+  blueberryTwo: { x: -80, y: 240, rotation: 28 },
+  blueberryThree: { x: 200, y: -130, rotation: -24 },
+  foreground: { x: -320, y: 140, rotation: 28 },
+};
+
 // Build choreography independently of its ScrollTrigger driver so reverse and
 // teardown can be checked with the real animation engine and controlled geometry.
 export function createSceneTransition(main: HTMLElement, compact = false): {
@@ -51,30 +62,32 @@ export function createSceneTransition(main: HTMLElement, compact = false): {
   gsap.set(all("[data-collection-gallery], [data-collection-heading], [data-collection-signoff]"), { zIndex: 4 });
   gsap.set(sprite, { autoAlpha: 0 });
   const scene = gsap.timeline({ paused: true });
+  scene.addLabel("collectionEnter", 0.65);
+  scene.addLabel("cardsEnter", "collectionEnter+=0.15");
+  scene.addLabel("cardsWave", "cardsEnter+=0.1");
   let dispose = () => {};
   scene.fromTo(select("[data-scene-backdrop]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.05, ease: "power1.inOut" }, 0.12);
   scene.to(select("[data-hero-scroll-copy]"), { y: -100, autoAlpha: 0, duration: 0.6, ease: "power2.in" }, 0);
   scene.to(hero.querySelectorAll("header, footer"), { autoAlpha: 0, duration: 0.45 }, 0.1);
   scene.to(select("[data-hero-scroll-art]"), { autoAlpha: 0, duration: 0.6 }, canShare ? 0.2 : 0.1);
-  scene.to(all('[data-fruit-scroll]:not([data-fruit-scroll="orange"])'), {
-    x: (index: number) => [-190, 240, 280, -160, -80, 200, -320][index],
-    y: (index: number) => [-260, -220, 180, 150, 240, -130, 140][index],
-    rotation: (index: number) => index % 2 ? -24 : 28,
-    scale: 0.85, duration: 1.1, ease: "power1.inOut",
-  }, 0.05);
+  all('[data-fruit-scroll]:not([data-fruit-scroll="orange"])').forEach(fruit => {
+    const exit = FRUIT_EXITS[fruit.dataset.fruitScroll ?? ""];
+    if (!exit) return;
+    scene.to(fruit, { ...exit, scale: 0.85, duration: 1.1, ease: "power1.inOut" }, 0.05);
+  });
   // Reveal content after the hero controls have faded; the background blends
   // in place, without moving a full-height green panel over the hero.
-  scene.set(collection, { autoAlpha: 1 }, 0.65);
+  scene.set(collection, { autoAlpha: 1 }, "collectionEnter");
   if (compact) scene.fromTo(collection, { y: () => Math.min(140, window.innerHeight * 0.18) }, {
     y: 0, duration: 1.1, ease: "power2.out", clearProps: "transform",
   }, 0.45);
   scene.fromTo(select("[data-collection-heading]"), { y: 40, autoAlpha: 0 }, {
     y: 0, autoAlpha: 1, duration: 0.7, ease: "power2.out",
-  }, 0.65);
+  }, "collectionEnter");
   all("[data-collection-card]").forEach((card, index) => {
     scene.fromTo(card, { x: [-180, 0, 180][index], y: [100, 180, 100][index],
       scale: [0.72, 0.62, 0.72][index], rotation: [-18, 12, 18][index], autoAlpha: 0,
-    }, { x: 0, y: 0, scale: 1, rotation: 0, autoAlpha: 1, duration: 1, ease: "power3.out" }, 0.8 + index * 0.12);
+    }, { x: 0, y: 0, scale: 1, rotation: 0, autoAlpha: 1, duration: 1, ease: "power3.out" }, `cardsEnter+=${index * 0.12}`);
   });
   scene.fromTo(select("[data-collection-signoff]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 }, 1.6);
 
