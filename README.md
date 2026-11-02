@@ -69,7 +69,7 @@ The loading wrapper waits for hero images to settle, successfully or with an err
 
 When the orange artwork and destination are available, a fixed sprite travels from the loader into the hero over 1.25 seconds. Missing artwork, an unavailable target, reduced motion or interruption uses a fade fallback. Content remains inert and scrolling stays locked until the visual exit completes. Collection images do not gate the loader.
 
-Entrance, floating, scroll and hover transforms use separate nested elements so they can work together. One visible shared orange replaces its source and destination copies during the scene transfer.
+Entrance, floating, scroll and hover transforms use separate nested elements so they can work together. The hero orange keeps its hover transform in CSS; the scroll animation reduces its hover strength before the shared-orange handoff. One visible shared orange replaces its source and destination copies during the scene transfer.
 
 Scrolling remains native; no additional smooth-scroll library is used. ScrollTrigger's scrubbed timeline gives the animation a gradual response while retaining wheel and keyboard scrolling.
 
@@ -116,7 +116,7 @@ Normal and 4× CPU-slowdown scrolling traces were recorded in Chrome. Content re
 
 Automated suites use real React components and GSAP/ScrollTrigger where relevant. Happy DOM geometry, image completion, media matching and clocks are controlled. Wrapper/page tests substitute the visual preloader to exercise its completion contract; dedicated preloader tests use real GSAP. These tests protect coordination and failure cases but do not prove native browser layout, networking or frame performance.
 
-Remaining checks are physical-phone touch and rotation, Safari/Firefox, a continuous loader-to-hero fidelity review, seamless intermediate resize frames, and representative low-powered-device frame performance. Browser emulation is not a physical-device test. Detailed observations and historical results are retained in [PROCESS.md](./PROCESS.md).
+Remaining checks are physical-phone touch and rotation, Safari/Firefox, a continuous loader-to-hero fidelity review, seamless intermediate resize frames, and representative low-powered-device frame performance. Browser emulation is not a physical-device test. A short workflow summary and verification notes are in [PROCESS.md](./PROCESS.md).
 
 ## Assumptions
 
