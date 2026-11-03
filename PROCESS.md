@@ -68,3 +68,9 @@ Fresh verification for these review improvements (2026-11-02):
 - Local development Chrome at 1440x900 and 1280x650: collection row, captions and footer visible; no horizontal document overflow. At 375x812: hero composition and single-column collection inspected; no horizontal document overflow. Phone-to-tablet resize to 768x1024 preserved the single-column collection and a reachable footer (bottom approximately 976px within the 1024px viewport).
 - Separate read-only review of code and test changes found no concrete regressions. It did not run additional checks.
 - Not rechecked: production deployment parity, physical phones, Safari/Firefox, slow-network and reduced-motion behavior in a real browser, continuous loading-to-hero reference fidelity, seamless intermediate resize frames and sustained 60fps. Existing controlled tests and historical browser observations do not replace these checks. No commit, push or deployment performed.
+
+## README refresh — 2026-11-03
+
+Documentation-only update: reorganized README around setup, implemented experiences, animation behavior, fallbacks, and delivery status. Checked descriptions against package.json and the page, loading, hero, and collection source. Consolidated historical verification details into links to this file and removed the dated implementation-check paragraph as requested. Source-to-live parity and final submission status remain unconfirmed.
+
+Verification: reviewed the documentation diff, checked README local links and referenced project paths, and ran `git diff --check`. No application tests, build, browser checks, or deployment were run for this documentation-only update. Existing unrelated edits to next-env.d.ts were preserved.
